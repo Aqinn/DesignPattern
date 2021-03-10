@@ -13,6 +13,8 @@ public class 使用wait和notify {
 
     private static final int CAPACITY = 5;
 
+    private static boolean flag = true;
+
     public static void main(String[] args) {
         Queue<Integer> queue = new LinkedList<>();
 
@@ -30,6 +32,17 @@ public class 使用wait和notify {
         consumer2.start();
         consumer3.start();
 
+//        new Thread(){
+//            public void run(){
+//                try {
+//                    Thread.sleep(10000);
+//                } catch (InterruptedException e) {
+//                    e.printStackTrace();
+//                } finally {
+//                    flag = false;
+//                }
+//            }
+//        }.start();
     }
 
 
@@ -51,7 +64,7 @@ public class 使用wait和notify {
 
         @Override
         public void run() {
-            while (true) {
+            while (flag) {
                 synchronized (queue) {
                     while (queue.size() == mMaxSize) {
                         try {
@@ -61,8 +74,9 @@ public class 使用wait和notify {
                             e.printStackTrace();
                         }
                     }
-                    System.out.println("[" + mName + "] Producing product's value : +" + mCount);
-                    queue.offer(mCount++);
+                    System.out.println("[" + mName + "] Producing product's value : +" + (queue.size() + 1));
+
+                    queue.offer(queue.size() + 1);
                     queue.notifyAll();
                     try {
                         Thread.sleep(new Random().nextInt(1000));
@@ -90,7 +104,7 @@ public class 使用wait和notify {
 
         @Override
         public void run() {
-            while (true) {
+            while (flag) {
                 synchronized (queue) {
                     while (queue.isEmpty()) {
                         try {
@@ -103,7 +117,6 @@ public class 使用wait和notify {
                     int x = queue.poll();
                     System.out.println("[" + mName + "] consuming product's value: " + x);
                     queue.notifyAll();
-
                     try {
                         Thread.sleep(new Random().nextInt(1000));
                     } catch (InterruptedException e) {
